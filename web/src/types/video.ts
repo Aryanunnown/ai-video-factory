@@ -40,4 +40,9 @@ export interface VideoResponse {
   scenes?: SceneResponse[];
 }
 
+export interface VideoResponseAPI {
+  success: boolean;
+  data: VideoResponse;
+}
+
 export type CreateVideoPayload = CreateVideoRequest;
