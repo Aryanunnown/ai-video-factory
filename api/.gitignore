@@ -3,3 +3,5 @@ node_modules
 .envdist
 /generated/prisma
 .env
+/dist
+api/dist/
