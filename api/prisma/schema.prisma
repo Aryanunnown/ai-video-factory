@@ -1,9 +1,9 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model VideoJob {
@@ -12,6 +12,8 @@ model VideoJob {
   topic       String
 
   title       String?
+
+  notes       String?
 
   status      String   @default("PENDING")
 
@@ -23,7 +25,7 @@ model VideoJob {
 
   createdAt   DateTime @default(now())
 
-  scenes      Scene[]
+  scenes Scene[]
 }
 
 model Scene {
@@ -31,11 +33,15 @@ model Scene {
 
   jobId      String
 
+  orderNo    Int
+
   text       String
 
   visual     String
 
   duration   Int
 
-  videoJob   VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status     String @default("PENDING")
+
+  videoJob VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
