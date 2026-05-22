@@ -1,13 +1,11 @@
 import type { Prisma, Scene, VideoJob } from "@prisma/client";
 import prisma from "../lib/prisma";
-import { MockProvider } from "./ai/mock.provider";
+import { getAIProvider } from "./ai/provider.factory";
 
 export interface ScriptGenerationResult {
   job: VideoJob;
   scenes: Scene[];
 }
-
-const aiProvider = new MockProvider();
 
 export const generateScript = async (
   videoJobId: string,
@@ -20,6 +18,7 @@ export const generateScript = async (
     throw new Error(`VideoJob not found for id: ${videoJobId}`);
   }
 
+  const aiProvider = getAIProvider();
   const scriptOutput = await aiProvider.generateScript(videoJob.topic);
 
   const result = await prisma.$transaction(async (tx) => {

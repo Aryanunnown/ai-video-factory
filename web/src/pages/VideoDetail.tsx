@@ -69,8 +69,8 @@ const VideoDetail = () => {
     queryKey: ["video", id],
     queryFn: () => getVideoJobApi(id as string),
     enabled: Boolean(id),
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
+    // refetchInterval: 3000,
+    // refetchIntervalInBackground: true,
   });
 
   const pipelineStatuses = useMemo(

@@ -21,10 +21,8 @@ const Dashboard = () => {
   const { data: jobs, isLoading, isError, error } = useQuery({
     queryKey: ["videoJobs"],
     queryFn: getVideoJobsApi,
-    refetchInterval: 5000,
+    // refetchInterval: 5000,
   });
-
-  console.log("Fetched video jobs:", jobs);
 
   const totals = useMemo(
     () => ({
