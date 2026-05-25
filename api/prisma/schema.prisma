@@ -32,22 +32,25 @@ model Scene {
   id         String @id @default(cuid())
 
   jobId      String
-
   orderNo    Int
-
   text       String
-
   visual     String
-
   duration   Int
-
   status     String @default("PENDING")
   
   audioUrl   String?
-
+  imageUrl   String?
   voiceStatus VoiceStatus @default(PENDING)
+  imageStatus ImageStatus @default(PENDING)
 
   videoJob VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+enum ImageStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
 }
 
 enum VoiceStatus {

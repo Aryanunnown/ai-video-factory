@@ -13,7 +13,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.use("/api", routes);
+app.use("/", routes);
 
 app.use(errorHandler);
 
