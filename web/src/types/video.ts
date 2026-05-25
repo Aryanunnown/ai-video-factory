@@ -13,6 +13,7 @@ export interface SceneResponse {
   visual: string;
   duration: number;
   status: string;
+  audioUrl?: string | null;
 }
 
 export interface VideoSummary {

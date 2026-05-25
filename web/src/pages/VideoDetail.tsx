@@ -7,6 +7,7 @@ import {
   AccordionSummary,
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -161,10 +162,48 @@ const VideoDetail = () => {
                     <Stack spacing={2}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
+                          Voice Status:
+                        </Typography>
+                        <Chip
+                          label={statusToLabel(scene.status)}
+                          color={statusToColor(scene.status)}
+                          size="small"
+                        />
+                      </Box>
+
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
                           Voice:
                         </Typography>
                         <Typography>{scene.text}</Typography>
                       </Box>
+
+                      {scene.audioUrl && (
+                        <>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => {
+                                const audioEl = document.querySelector(`audio[src="${scene.audioUrl}"]`) as HTMLAudioElement;
+                                if (audioEl) {
+                                  audioEl.play();
+                                }
+                              }}
+                            >
+                              Play
+                            </Button>
+                            <Typography variant="body2">Audio</Typography>
+                          </Box>
+
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
+                              Audio Player:
+                            </Typography>
+                            <audio controls src={scene.audioUrl} style={{ width: "100%" }} />
+                          </Box>
+                        </>
+                      )}
 
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
@@ -179,17 +218,6 @@ const VideoDetail = () => {
                             Duration:
                           </Typography>
                           <Typography>{scene.duration} sec</Typography>
-                        </Box>
-
-                        <Box sx={{ minWidth: 160 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
-                            Status:
-                          </Typography>
-                          <Chip
-                            label={statusToLabel(scene.status)}
-                            color={statusToColor(scene.status)}
-                            size="small"
-                          />
                         </Box>
                       </Box>
                     </Stack>
