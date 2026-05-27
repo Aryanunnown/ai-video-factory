@@ -14,6 +14,9 @@ export interface SceneResponse {
   duration: number;
   status: string;
   audioUrl?: string | null;
+  imageUrl?: string | null;
+  voiceStatus?: string | null;
+  imageStatus?: string | null;
 }
 
 export interface VideoSummary {

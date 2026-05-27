@@ -40,20 +40,13 @@ model Scene {
   
   audioUrl   String?
   imageUrl   String?
-  voiceStatus VoiceStatus @default(PENDING)
+  voiceStatus String @default("PENDING")
   imageStatus ImageStatus @default(PENDING)
 
   videoJob VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
 
 enum ImageStatus {
-  PENDING
-  PROCESSING
-  DONE
-  FAILED
-}
-
-enum VoiceStatus {
   PENDING
   PROCESSING
   DONE

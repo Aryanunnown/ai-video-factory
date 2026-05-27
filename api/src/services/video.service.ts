@@ -61,6 +61,7 @@ export const createVideoJob = async (
 };
 
 export const getVideoJobs = async (): Promise<VideoJobSummaryData[]> => {
+  console.log("Fetching video jobs from database...");
   const jobs = await prisma.videoJob.findMany({
     orderBy: {
       createdAt: "desc",

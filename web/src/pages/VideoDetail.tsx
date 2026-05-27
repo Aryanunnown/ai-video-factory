@@ -7,15 +7,11 @@ import {
   AccordionSummary,
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
   Chip,
   Divider,
-  Step,
-  StepLabel,
-  Stepper,
   Stack,
   Typography,
 } from "@mui/material";
@@ -36,6 +32,19 @@ const statusToLabel = (status: string) => {
 };
 
 const statusToColor = (status: string) => {
+  switch (status) {
+    case "DONE":
+      return "success";
+    case "PROCESSING":
+      return "info";
+    case "FAILED":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
+const voiceStatusToColor = (status: string) => {
   switch (status) {
     case "DONE":
       return "success";
@@ -119,26 +128,21 @@ const VideoDetail = () => {
           ) : isError ? (
             <Alert severity="error">{error?.message || "Unable to load pipeline status."}</Alert>
           ) : (
-            <Stepper orientation="vertical" nonLinear activeStep={0}>
+            <Stack spacing={2}>
               {steps.map((step, index) => {
                 const stepStatus = pipelineStatuses[index];
                 return (
-                  <Step key={step} expanded>
-                    <StepLabel
-                      optional={
-                        <Chip
-                          label={statusToLabel(stepStatus)}
-                          color={statusToColor(stepStatus)}
-                          size="small"
-                        />
-                      }
-                    >
-                      <Typography>{step}</Typography>
-                    </StepLabel>
-                  </Step>
+                  <Box key={step} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body1">{step}</Typography>
+                    <Chip
+                      label={statusToLabel(stepStatus)}
+                      color={statusToColor(stepStatus)}
+                      size="small"
+                    />
+                  </Box>
                 );
               })}
-            </Stepper>
+            </Stack>
           )}
         </CardContent>
       </Card>
@@ -157,16 +161,41 @@ const VideoDetail = () => {
                 <Accordion key={scene.id} disableGutters>
                   <AccordionSummary expandIcon={<Typography variant="body2">▼</Typography>}>
                     <Typography variant="subtitle1">Scene {scene.orderNo}</Typography>
+                    <Box sx={{ ml: "auto", mr: 2 }}>
+                      <Chip
+                        label={statusToLabel(scene.voiceStatus || "PENDING")}
+                        color={voiceStatusToColor(scene.voiceStatus || "PENDING")}
+                        size="small"
+                      />
+                    </Box>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Stack spacing={2}>
+                      {scene.imageUrl && (
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
+                            Image Preview:
+                          </Typography>
+                          <img src={scene.imageUrl} alt={`Scene ${scene.orderNo}`} style={{ maxWidth: "100%", borderRadius: 4 }} />
+                        </Box>
+                      )}
+
+                      {scene.audioUrl && (
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
+                            Audio Player:
+                          </Typography>
+                          <audio controls src={scene.audioUrl} style={{ width: "100%" }} />
+                        </Box>
+                      )}
+
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
                           Voice Status:
                         </Typography>
                         <Chip
-                          label={statusToLabel(scene.status)}
-                          color={statusToColor(scene.status)}
+                          label={statusToLabel(scene.voiceStatus || "PENDING")}
+                          color={voiceStatusToColor(scene.voiceStatus || "PENDING")}
                           size="small"
                         />
                       </Box>
@@ -177,33 +206,6 @@ const VideoDetail = () => {
                         </Typography>
                         <Typography>{scene.text}</Typography>
                       </Box>
-
-                      {scene.audioUrl && (
-                        <>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => {
-                                const audioEl = document.querySelector(`audio[src="${scene.audioUrl}"]`) as HTMLAudioElement;
-                                if (audioEl) {
-                                  audioEl.play();
-                                }
-                              }}
-                            >
-                              Play
-                            </Button>
-                            <Typography variant="body2">Audio</Typography>
-                          </Box>
-
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
-                              Audio Player:
-                            </Typography>
-                            <audio controls src={scene.audioUrl} style={{ width: "100%" }} />
-                          </Box>
-                        </>
-                      )}
 
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
