@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -14,6 +15,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api", routes);
+
+app.use("/storage", express.static(path.join(process.cwd(), "storage")));
 
 app.use(errorHandler);
 

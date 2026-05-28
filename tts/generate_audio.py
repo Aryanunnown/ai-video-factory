@@ -1,10 +1,12 @@
 from piper import PiperVoice
 import wave
 import sys
+import os
 
-voice = PiperVoice.load(
-    "voices/en_US-lessac-medium.onnx"
-)
+scriptDir = os.path.dirname(os.path.abspath(__file__))
+voicePath = os.path.join(scriptDir, "voices", "en_US-lessac-medium.onnx")
+
+voice = PiperVoice.load(voicePath)
 
 text = sys.argv[1]
 output = sys.argv[2]

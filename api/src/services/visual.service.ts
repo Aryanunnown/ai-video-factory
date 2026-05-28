@@ -1,8 +1,8 @@
 import prisma from "../lib/prisma";
-import { generateImage } from "./flux.service";
+import { generateSceneImage } from "./visual/comfy.service";
 import { generateVideoAudio } from "./voice/voice.service";
 
-export const generateVideoImages = async (videoJobId: string): Promise<void> => {
+export async function generateVideoImages(videoJobId: string): Promise<{ generatedCount: number }> {
   await prisma.videoJob.update({
     where: { id: videoJobId },
     data: { status: "VISUAL_PROCESSING" },
@@ -19,15 +19,11 @@ export const generateVideoImages = async (videoJobId: string): Promise<void> => 
     }
 
     const scenes = videoJob.scenes ?? [];
+    let generatedCount = 0;
 
     for (const scene of scenes) {
-      await prisma.scene.update({
-        where: { id: scene.id },
-        data: { imageStatus: "PROCESSING" },
-      });
-
       try {
-        const imagePath = await generateImage(scene.visual, scene.id);
+        const imagePath = await generateSceneImage(scene.id);
 
         await prisma.scene.update({
           where: { id: scene.id },
@@ -36,12 +32,8 @@ export const generateVideoImages = async (videoJobId: string): Promise<void> => 
             imageStatus: "DONE",
           },
         });
+        generatedCount++;
       } catch (error) {
-        await prisma.scene.update({
-          where: { id: scene.id },
-          data: { imageStatus: "FAILED" },
-        });
-
         await prisma.videoJob.update({
           where: { id: videoJobId },
           data: { status: "FAILED" },
@@ -55,7 +47,6 @@ export const generateVideoImages = async (videoJobId: string): Promise<void> => 
       data: { status: "VISUAL_DONE" },
     });
 
-    // Start voice generation asynchronously
     setImmediate(async () => {
       try {
         await generateVideoAudio(videoJobId);
@@ -63,6 +54,8 @@ export const generateVideoImages = async (videoJobId: string): Promise<void> => 
         console.error(`Voice generation failed for job ${videoJobId}:`, voiceError);
       }
     });
+
+    return { generatedCount };
   } catch (error) {
     await prisma.videoJob.update({
       where: { id: videoJobId },
@@ -70,4 +63,4 @@ export const generateVideoImages = async (videoJobId: string): Promise<void> => 
     });
     throw error;
   }
-};
+}

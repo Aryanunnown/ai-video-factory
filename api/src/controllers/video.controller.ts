@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { createVideoJob, getVideoById, getVideoJobs } from "../services/video.service";
 import { generateScript } from "../services/script.service";
-import { generateVideoImages } from "../services/visual.service";
 import {
   CreateVideoJobInput,
   CreateVideoJobResponse,
@@ -20,10 +19,9 @@ export const handleCreateVideoJob = async (
     setImmediate(async () => {
       try {
         await generateScript(created.data.id);
-        await generateVideoImages(created.data.id);
       } catch (backgroundError) {
         console.error(
-          `Background script/image generation failed for job ${created.data.id}:`,
+          `Background script generation failed for job ${created.data.id}:`,
           backgroundError,
         );
       }

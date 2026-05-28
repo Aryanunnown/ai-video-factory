@@ -2,9 +2,6 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Alert,
   Box,
   Card,
@@ -79,8 +76,6 @@ const VideoDetail = () => {
     queryKey: ["video", id],
     queryFn: () => getVideoJobApi(id as string),
     enabled: Boolean(id),
-    // refetchInterval: 3000,
-    // refetchIntervalInBackground: true,
   });
 
   const pipelineStatuses = useMemo(
@@ -158,26 +153,31 @@ const VideoDetail = () => {
           ) : video?.scenes?.length ? (
             <Stack spacing={2}>
               {video.scenes.map((scene) => (
-                <Accordion key={scene.id} disableGutters>
-                  <AccordionSummary expandIcon={<Typography variant="body2">▼</Typography>}>
-                    <Typography variant="subtitle1">Scene {scene.orderNo}</Typography>
-                    <Box sx={{ ml: "auto", mr: 2 }}>
+                <Card key={scene.id}>
+                  <CardHeader
+                    title={`Scene ${scene.orderNo}`}
+                    action={
                       <Chip
-                        label={statusToLabel(scene.voiceStatus || "PENDING")}
-                        color={voiceStatusToColor(scene.voiceStatus || "PENDING")}
+                        label={statusToLabel(scene.imageStatus || "PENDING")}
+                        color={statusToColor(scene.imageStatus || "PENDING")}
                         size="small"
                       />
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
+                    }
+                  />
+                  <Divider />
+                  <CardContent>
                     <Stack spacing={2}>
-                      {scene.imageUrl && (
+                      {scene.imageUrl ? (
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
                             Image Preview:
                           </Typography>
                           <img src={scene.imageUrl} alt={`Scene ${scene.orderNo}`} style={{ maxWidth: "100%", borderRadius: 4 }} />
                         </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          Image not generated yet
+                        </Typography>
                       )}
 
                       {scene.audioUrl && (
@@ -223,8 +223,8 @@ const VideoDetail = () => {
                         </Box>
                       </Box>
                     </Stack>
-                  </AccordionDetails>
-                </Accordion>
+                  </CardContent>
+                </Card>
               ))}
             </Stack>
           ) : (

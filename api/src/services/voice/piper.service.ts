@@ -4,7 +4,7 @@ import fs from "fs/promises";
 
 export async function generateAudio(text: string, sceneId: string): Promise<string> {
   const audioDir = path.join(process.cwd(), "storage", "audio");
-  const outputPath = path.join(audioDir, `${sceneId}.wav`);
+  const fullOutputPath = path.join(audioDir, `${sceneId}.wav`);
 
   try {
     await fs.mkdir(audioDir, { recursive: true });
@@ -12,10 +12,11 @@ export async function generateAudio(text: string, sceneId: string): Promise<stri
     throw new Error(`Failed to create audio directory: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  const scriptPath = path.resolve(process.cwd(), "../../../tts/generate_audio.py");
+  const scriptPath = path.resolve(process.cwd(), "..", "tts", "generate_audio.py");
 
   return new Promise((resolve, reject) => {
-    const child = spawn("python", [scriptPath, text, outputPath]);
+    const venvPython = path.resolve(process.cwd(), "..", "tts", "venv", "bin", "python");
+    const child = spawn(venvPython, [scriptPath, text, fullOutputPath]);
 
     let stdout = "";
     let stderr = "";
