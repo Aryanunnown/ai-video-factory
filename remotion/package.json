@@ -1,0 +1,26 @@
+{
+  "name": "remotion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render",
+    "preview": "remotion preview",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@remotion/transitions": "^4.0.468",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "remotion": "^4.0.468"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config": "^4.0.468",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.6.0"
+  }
+}

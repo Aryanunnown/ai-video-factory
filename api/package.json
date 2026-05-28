@@ -17,6 +17,8 @@
     "@huggingface/inference": "^4.13.18",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@remotion/bundler": "^4.0.468",
+    "@remotion/renderer": "^4.0.468",
     "axios": "^1.16.1",
     "bullmq": "^5.76.10",
     "cors": "^2.8.6",
