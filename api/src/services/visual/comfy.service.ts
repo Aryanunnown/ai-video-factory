@@ -4,6 +4,7 @@ import prisma from "../../lib/prisma";
 import { queuePrompt, getHistory, downloadImage } from "../../lib/comfy-client";
 import { loadWorkflow, injectPrompt } from "./workflow.util";
 
+const USE_CACHED_ASSETS = process.env.USE_CACHED_ASSETS === "true";
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLL_ATTEMPTS = 180;
 
@@ -15,6 +16,34 @@ export async function generateSceneImage(sceneId: string): Promise<string> {
   const scene = await prisma.scene.findUnique({ where: { id: sceneId } });
   if (!scene) {
     throw new Error(`Scene not found for id: ${sceneId}`);
+  }
+
+  // Check if we should use cached assets and if any images exist in storage
+  if (USE_CACHED_ASSETS) {
+    const imagesDir = path.join(process.cwd(), "storage", "images");
+    try {
+      const files = await fs.readdir(imagesDir);
+      const pngFiles = files.filter(f => f.endsWith('.png'));
+      
+      if (pngFiles.length > 0) {
+        // Use the first available image and create file with scene ID name
+        const workspaceRoot = path.resolve(process.cwd(), "..");
+        const destPath = path.join(workspaceRoot, "storage", "images", `${sceneId}.png`);
+        await fs.copyFile(
+          path.join(imagesDir, pngFiles[0]),
+          destPath
+        ).catch(() => {});
+        
+        const fallbackImagePath = `storage/images/${sceneId}.png`;
+        await prisma.scene.update({
+          where: { id: sceneId },
+          data: { imageUrl: fallbackImagePath, imageStatus: "DONE" },
+        });
+        return fallbackImagePath;
+      }
+    } catch (err) {
+      // Directory doesn't exist or access error - proceed with generation
+    }
   }
 
   await prisma.scene.update({

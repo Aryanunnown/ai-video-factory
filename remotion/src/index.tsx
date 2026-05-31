@@ -1,6 +1,6 @@
 import React from "react";
 import { Composition, registerRoot } from "remotion";
-import { Video, type SceneData } from "./Video";
+import { Video } from "./Video";
 
 const RemotionRoot: React.FC = () => {
   return (
@@ -8,9 +8,11 @@ const RemotionRoot: React.FC = () => {
       <Composition
         id="VideoShorts"
         component={Video}
-        durationInFrames={(props: { scenes: SceneData[] }) =>
-          props.scenes.reduce((total, scene) => total + scene.duration * 30, 0)
-        }
+        durationInFrames={300}
+        calculateDurationInFrames={(props: { scenes: { duration: number }[] }) => {
+          const totalFrames = props.scenes.reduce((total, scene) => total + scene.duration * 30, 0);
+          return totalFrames || 300;
+        }}
         fps={30}
         width={1080}
         height={1920}

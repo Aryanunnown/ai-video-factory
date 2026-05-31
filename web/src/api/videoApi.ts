@@ -18,6 +18,10 @@ const transformUrls = (data: VideoResponse): VideoResponse => {
       audioUrl: scene.audioUrl ? `${API_BASE_URL}/${scene.audioUrl}` : null,
     }));
   }
+  // Transform finalVideo URL if present
+  if (data.finalVideo) {
+    data.finalVideo = `${API_BASE_URL}/${data.finalVideo}`;
+  }
   return data;
 };
 
@@ -28,17 +32,10 @@ export const createVideoJobApi = async (payload: CreateVideoPayload): Promise<Vi
 
 export const getVideoJobApi = async (id: string): Promise<VideoResponse> => {
   const response = await api.get<VideoResponseAPI>(`/video/${id}`);
-  console.log(`API response for video job ${id}:`, response);
   return transformUrls(response.data.data);
 };
 
 export const getVideoJobsApi = async (): Promise<VideoSummary[]> => {
   const response = await api.get<VideoJobsResponse>("/video");
-
-  console.log(
-    "API response for video jobs:",
-    response.data
-  );
-
   return response.data.data;
 };

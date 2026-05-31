@@ -1,52 +1,47 @@
-datasource db {
-  provider = "postgresql"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+}
+
 model VideoJob {
-  id          String   @id @default(cuid())
-
-  topic       String
-
-  title       String?
-
-  notes       String?
-
-  status      String   @default("PENDING")
-
-  scriptJson  Json?
-
-  audioUrl    String?
-
-  finalVideo  String?
-
-  createdAt   DateTime @default(now())
-
-  scenes Scene[]
+  id         String   @id @default(cuid())
+  topic      String
+  title      String?
+  status     String   @default("PENDING")
+  scriptJson Json?
+  audioUrl   String?
+  finalVideo String?
+  createdAt  DateTime @default(now())
+  notes      String?
+  scenes     Scene[]
 }
 
 model Scene {
-  id         String @id @default(cuid())
-
-  jobId      String
-  orderNo    Int
-  text       String
-  visual     String
-  duration   Int
-  status     String @default("PENDING")
-  
-  audioUrl   String?
-  imageUrl   String?
-  voiceStatus String @default("PENDING")
+  id          String      @id @default(cuid())
+  jobId       String
+  text        String
+  visual      String
+  duration    Int
+  orderNo     Int
+  status      String      @default("PENDING")
+  audioUrl    String?
+  voiceStatus VoiceStatus @default(PENDING)
   imageStatus ImageStatus @default(PENDING)
-
-  videoJob VideoJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  imageUrl    String?
+  videoJob    VideoJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
 
 enum ImageStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum VoiceStatus {
   PENDING
   PROCESSING
   DONE

@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
@@ -15,11 +16,17 @@ import {
 import { getVideoJobApi } from "../api/videoApi";
 import { VideoResponse } from "../types/video";
 
+const API_BASE_URL = "http://localhost:4000";
+
 const statusToLabel = (status: string) => {
   switch (status) {
     case "DONE":
+    case "RENDER_DONE":
       return "Done";
     case "PROCESSING":
+    case "RENDER_PROCESSING":
+    case "VISUAL_PROCESSING":
+    case "VOICE_PROCESSING":
       return "Processing";
     case "FAILED":
       return "Failed";
@@ -31,8 +38,12 @@ const statusToLabel = (status: string) => {
 const statusToColor = (status: string) => {
   switch (status) {
     case "DONE":
+    case "RENDER_DONE":
       return "success";
     case "PROCESSING":
+    case "RENDER_PROCESSING":
+    case "VISUAL_PROCESSING":
+    case "VOICE_PROCESSING":
       return "info";
     case "FAILED":
       return "error";
@@ -57,7 +68,17 @@ const voiceStatusToColor = (status: string) => {
 const getPipelineStatuses = (status: string) => {
   switch (status) {
     case "PROCESSING":
-      return ["DONE", "PROCESSING", "PENDING", "PENDING"];
+    case "VISUAL_PROCESSING":
+      return ["DONE", "DONE", "PROCESSING", "PENDING"];
+    case "VISUAL_DONE":
+      return ["DONE", "DONE", "PROCESSING", "PENDING"];
+    case "VOICE_PROCESSING":
+      return ["DONE", "DONE", "PROCESSING", "PENDING"];
+    case "VOICE_DONE":
+      return ["DONE", "DONE", "DONE", "PROCESSING"];
+    case "RENDER_PROCESSING":
+      return ["DONE", "DONE", "DONE", "PROCESSING"];
+    case "RENDER_DONE":
     case "DONE":
       return ["DONE", "DONE", "DONE", "DONE"];
     case "FAILED":
@@ -82,6 +103,12 @@ const VideoDetail = () => {
     () => getPipelineStatuses(video?.status ?? "PENDING"),
     [video?.status]
   );
+
+  const renderStatus = video?.status === "RENDER_DONE" ? "DONE" :
+                     video?.status === "RENDER_PROCESSING" ? "PROCESSING" :
+                     video?.status?.includes("FAILED") ? "FAILED" : "PENDING";
+
+  const videoUrl = video?.finalVideo || undefined;
 
   return (
     <Stack spacing={4} sx={{ width: "100%", maxWidth: 900, mx: "auto", px: 2, py: 4 }}>
@@ -124,23 +151,62 @@ const VideoDetail = () => {
             <Alert severity="error">{error?.message || "Unable to load pipeline status."}</Alert>
           ) : (
             <Stack spacing={2}>
-              {steps.map((step, index) => {
-                const stepStatus = pipelineStatuses[index];
-                return (
-                  <Box key={step} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography variant="body1">{step}</Typography>
-                    <Chip
-                      label={statusToLabel(stepStatus)}
-                      color={statusToColor(stepStatus)}
-                      size="small"
-                    />
-                  </Box>
-                );
-              })}
+              {steps.map((step, index) => (
+                <Box key={step} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body1">{step}</Typography>
+                  <Chip
+                    label={statusToLabel(pipelineStatuses[index])}
+                    color={statusToColor(pipelineStatuses[index])}
+                    size="small"
+                  />
+                </Box>
+              ))}
             </Stack>
           )}
         </CardContent>
       </Card>
+
+      {video?.finalVideo && (
+        <Card>
+          <CardHeader title="Render" />
+          <Divider />
+          <CardContent>
+            <Stack spacing={2}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>Render Status:</Typography>
+                <Chip
+                  label={statusToLabel(renderStatus)}
+                  color={statusToColor(renderStatus)}
+                  size="small"
+                />
+              </Box>
+
+              {videoUrl && (
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
+                    Video Preview:
+                  </Typography>
+                  <video
+                    src={videoUrl}
+                    controls
+                    style={{ width: "100%", maxHeight: 500, borderRadius: 4, backgroundColor: "#000" }}
+                    onError={(e) => console.error("Video error:", e)}
+                  />
+                </Box>
+              )}
+
+              <Button
+                variant="contained"
+                href={videoUrl}
+                disabled={!videoUrl}
+                sx={{ alignSelf: "flex-start" }}
+              >
+                Download Video
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader title="Generated Scenes" />
@@ -167,17 +233,13 @@ const VideoDetail = () => {
                   <Divider />
                   <CardContent>
                     <Stack spacing={2}>
-                      {scene.imageUrl ? (
+                      {scene.imageUrl && (
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 700 }} gutterBottom>
                             Image Preview:
                           </Typography>
                           <img src={scene.imageUrl} alt={`Scene ${scene.orderNo}`} style={{ maxWidth: "100%", borderRadius: 4 }} />
                         </Box>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          Image not generated yet
-                        </Typography>
                       )}
 
                       {scene.audioUrl && (

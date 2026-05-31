@@ -4,10 +4,10 @@ import {
   Audio,
   Img,
   interpolate,
-  Sequence,
   useCurrentFrame,
   useVideoConfig,
   spring,
+  staticFile,
 } from "remotion";
 
 export interface SceneData {
@@ -68,7 +68,7 @@ export const Scene: React.FC<SceneProps> = ({
     <AbsoluteFill>
       <AbsoluteFill>
         <Img
-          src={imageUrl}
+          src={staticFile(imageUrl)}
           style={{
             width: "100%",
             height: "100%",
@@ -85,13 +85,11 @@ export const Scene: React.FC<SceneProps> = ({
         />
       </AbsoluteFill>
 
-      <Sequence from={20}>
-        <SubtitleOverlay text={text} duration={duration} />
-      </Sequence>
+      <SubtitleOverlay text={text} duration={duration} />
 
       {audioUrl && (
         <Audio
-          src={audioUrl}
+          src={staticFile(audioUrl)}
           startFrom={0}
         />
       )}

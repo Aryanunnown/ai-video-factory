@@ -13,6 +13,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import { getVideoJobsApi } from "../api/videoApi";
 import { VideoSummary } from "../types/video";
 import StatusChip from "../components/StatusChip";
@@ -107,7 +108,12 @@ const Dashboard = () => {
                 </TableHead>
                 <TableBody>
                   {jobs?.map((job) => (
-                    <TableRow key={job.id}>
+                    <TableRow
+                      key={job.id}
+                      component={Link}
+                      to={`/video/${job.id}`}
+                      sx={{ textDecoration: "none", cursor: "pointer", "&:hover": { backgroundColor: "#f5f5f5" } }}
+                    >
                       <TableCell>{job.topic}</TableCell>
                       <TableCell>
                         <StatusChip status={job.status} />

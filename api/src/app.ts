@@ -16,7 +16,8 @@ app.get("/health", (_req, res) => {
 
 app.use("/api", routes);
 
-app.use("/storage", express.static(path.join(process.cwd(), "storage")));
+// Serve storage files from apps/storage directory
+app.use("/storage", express.static(path.join(process.cwd(), "..", "storage")));
 
 app.use(errorHandler);
 

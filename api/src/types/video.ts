@@ -30,7 +30,7 @@ export interface ListVideoJobsResponse {
 }
 
 export interface VideoJobDetailData
-  extends Pick<VideoJob, "id" | "topic" | "title" | "status" | "scriptJson"> {
+  extends Pick<VideoJob, "id" | "topic" | "title" | "status" | "scriptJson" | "finalVideo"> {
   createdAt: string;
   scenes: Scene[];
 }

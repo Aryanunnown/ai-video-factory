@@ -2,3 +2,5 @@
 venv
 /remotion/node_modules
 /remotion/build
+/storage
+/remotion/public
