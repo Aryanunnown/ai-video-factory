@@ -21,7 +21,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
 
   // Check if we should use cached video and if it exists in storage
   if (USE_CACHED_ASSETS) {
-    const workspaceRoot = path.resolve(process.cwd(), "..");
+    const workspaceRoot = process.cwd();
     const videoPath = path.join(workspaceRoot, "storage", "videos", `${videoJobId}.mp4`);
     try {
       await fs.access(videoPath);
@@ -39,10 +39,10 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
     }
   }
 
-  const workspaceRoot = path.resolve(process.cwd(), "..");
+  const workspaceRoot = process.cwd();
   const storageImagesDir = path.join(workspaceRoot, "storage", "images");
   const storageAudioDir = path.join(workspaceRoot, "storage", "audio");
-  const remotionPublicDir = path.join(workspaceRoot, "remotion", "public");
+  const remotionPublicDir = path.join(workspaceRoot, "..", "remotion", "public");
 
   // Ensure remotion public directory exists
   await fs.mkdir(remotionPublicDir, { recursive: true });
@@ -53,7 +53,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
     .map((scene) => {
       const imageFilename = path.basename(scene.imageUrl!);
       const audioFilename = scene.audioUrl ? path.basename(scene.audioUrl!) : undefined;
-      
+
       // Copy image to remotion public if it exists in storage
       if (scene.imageUrl) {
         const srcPath = path.join(storageImagesDir, imageFilename);
@@ -62,7 +62,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
           fs.copyFile(srcPath, destPath).catch(() => {});
         }).catch(() => {});
       }
-      
+
       // Copy audio to remotion public if it exists in storage
       if (scene.audioUrl && audioFilename) {
         const srcPath = path.join(storageAudioDir, audioFilename);
@@ -84,7 +84,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
     throw new Error(`No scenes with media found for job: ${videoJobId}`);
   }
 
-  const remotionDir = path.join(workspaceRoot, "remotion");
+  const remotionDir = path.join(workspaceRoot, "..", "remotion");
   const outputDir = path.join(workspaceRoot, "storage", "videos");
   const outputPath = path.join(outputDir, `${videoJobId}.mp4`);
   const propsPath = path.join(outputDir, `${videoJobId}-props.json`);
@@ -97,11 +97,11 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
   try {
     const { stdout, stderr } = await execa(
       "npx",
-      ["remotion", "render", "src/index.tsx", "VideoShorts", 
-       `--props=${propsPath}`, 
-       `--output=${outputPath}`, 
+      ["remotion", "render", "src/index.tsx", "VideoShorts",
+       `--props=${propsPath}`,
+       `--output=${outputPath}`,
        "--codec=h264"],
-      { 
+      {
         cwd: remotionDir
       }
     );

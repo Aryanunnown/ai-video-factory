@@ -21,28 +21,17 @@ export async function generateSceneImage(sceneId: string): Promise<string> {
   // Check if we should use cached assets and if any images exist in storage
   if (USE_CACHED_ASSETS) {
     const imagesDir = path.join(process.cwd(), "storage", "images");
+    const specificImagePath = path.join(imagesDir, `${sceneId}.png`);
     try {
-      const files = await fs.readdir(imagesDir);
-      const pngFiles = files.filter(f => f.endsWith('.png'));
-      
-      if (pngFiles.length > 0) {
-        // Use the first available image and create file with scene ID name
-        const workspaceRoot = path.resolve(process.cwd(), "..");
-        const destPath = path.join(workspaceRoot, "storage", "images", `${sceneId}.png`);
-        await fs.copyFile(
-          path.join(imagesDir, pngFiles[0]),
-          destPath
-        ).catch(() => {});
-        
-        const fallbackImagePath = `storage/images/${sceneId}.png`;
-        await prisma.scene.update({
-          where: { id: sceneId },
-          data: { imageUrl: fallbackImagePath, imageStatus: "DONE" },
-        });
-        return fallbackImagePath;
-      }
+      await fs.access(specificImagePath);
+      const fallbackImagePath = `storage/images/${sceneId}.png`;
+      await prisma.scene.update({
+        where: { id: sceneId },
+        data: { imageUrl: fallbackImagePath, imageStatus: "DONE" },
+      });
+      return fallbackImagePath;
     } catch (err) {
-      // Directory doesn't exist or access error - proceed with generation
+      // File doesn't exist, proceed with generation
     }
   }
 
@@ -97,10 +86,9 @@ export async function generateSceneImage(sceneId: string): Promise<string> {
 
     const imageBuffer = await downloadImage(outputFilename, outputSubfolder, outputType);
 
-    const outputPath = path.join("storage", "images", `${sceneId}.png`);
-    const fullPath = path.join(process.cwd(), outputPath);
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    await fs.writeFile(fullPath, imageBuffer);
+    const outputPath = path.join(process.cwd(), "storage", "images", `${sceneId}.png`);
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.writeFile(outputPath, imageBuffer);
 
     const relativePath = `storage/images/${sceneId}.png`;
     await prisma.scene.update({

@@ -1,5 +1,7 @@
 import React from "react";
-import { Series } from "remotion";
+import {
+  Series,
+} from "remotion";
 import { Scene, type SceneData } from "./Scene";
 
 export interface VideoProps {

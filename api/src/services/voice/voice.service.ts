@@ -13,31 +13,20 @@ export async function generateSceneAudio(sceneId: string): Promise<Scene> {
     throw new Error(`Scene not found for id: ${sceneId}`);
   }
 
-  // Check if we should use cached assets and if any audio files exist in storage
+  // Check if we should use cached assets and if specific audio file exists in storage
   if (USE_CACHED_ASSETS) {
     const audioDir = path.join(process.cwd(), "storage", "audio");
+    const specificAudioPath = path.join(audioDir, `${sceneId}.wav`);
     try {
-      const files = await fs.readdir(audioDir);
-      const wavFiles = files.filter(f => f.endsWith('.wav'));
-      
-      if (wavFiles.length > 0) {
-        // Use the first available audio and create file with scene ID name
-        const workspaceRoot = path.resolve(process.cwd(), "..");
-        const destPath = path.join(workspaceRoot, "storage", "audio", `${sceneId}.wav`);
-        await fs.copyFile(
-          path.join(audioDir, wavFiles[0]),
-          destPath
-        ).catch(() => {});
-        
-        const fallbackAudioPath = `storage/audio/${sceneId}.wav`;
-        const updatedScene = await prisma.scene.update({
-          where: { id: sceneId },
-          data: { audioUrl: fallbackAudioPath, voiceStatus: "DONE" },
-        });
-        return updatedScene;
-      }
+      await fs.access(specificAudioPath);
+      const fallbackAudioPath = `storage/audio/${sceneId}.wav`;
+      const updatedScene = await prisma.scene.update({
+        where: { id: sceneId },
+        data: { audioUrl: fallbackAudioPath, voiceStatus: "DONE" },
+      });
+      return updatedScene;
     } catch (err) {
-      // Directory doesn't exist or access error - proceed with generation
+      // File doesn't exist, proceed with generation
     }
   }
 
