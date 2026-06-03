@@ -18,7 +18,7 @@ export const Video: React.FC<VideoProps> = ({ scenes }) => {
       {scenes.map((scene, index) => (
         <Series.Sequence
           key={index}
-          durationInFrames={scene.duration * 30}
+          durationInFrames={Math.round(scene.duration * 30)}
           layout="none"
         >
           <Scene

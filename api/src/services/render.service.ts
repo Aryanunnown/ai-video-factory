@@ -5,6 +5,13 @@ import prisma from "../lib/prisma";
 
 const USE_CACHED_ASSETS = process.env.USE_CACHED_ASSETS === "true";
 
+interface RenderScene {
+  imageUrl: string;
+  audioUrl: string;
+  text: string;
+  duration: number;
+}
+
 export const renderVideo = async (videoJobId: string): Promise<string> => {
   const videoJob = await prisma.videoJob.findUnique({
     where: { id: videoJobId },
@@ -44,45 +51,48 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
   const storageAudioDir = path.join(workspaceRoot, "storage", "audio");
   const remotionPublicDir = path.join(workspaceRoot, "..", "remotion", "public");
 
-  // Ensure remotion public directory exists
   await fs.mkdir(remotionPublicDir, { recursive: true });
 
-  // Copy scene-specific assets to remotion public directory
-  const scenes = videoJob.scenes
-    .filter((scene) => scene.audioUrl && scene.imageUrl)
-    .map((scene) => {
-      const imageFilename = path.basename(scene.imageUrl!);
-      const audioFilename = scene.audioUrl ? path.basename(scene.audioUrl!) : undefined;
+  const renderScenes: RenderScene[] = [];
 
-      // Copy image to remotion public if it exists in storage
-      if (scene.imageUrl) {
-        const srcPath = path.join(storageImagesDir, imageFilename);
-        const destPath = path.join(remotionPublicDir, imageFilename);
-        fs.access(srcPath).then(() => {
-          fs.copyFile(srcPath, destPath).catch(() => {});
-        }).catch(() => {});
-      }
+  for (const scene of videoJob.scenes) {
+    if (!scene.audioUrl || !scene.imageUrl) continue;
 
-      // Copy audio to remotion public if it exists in storage
-      if (scene.audioUrl && audioFilename) {
-        const srcPath = path.join(storageAudioDir, audioFilename);
-        const destPath = path.join(remotionPublicDir, audioFilename);
-        fs.access(srcPath).then(() => {
-          fs.copyFile(srcPath, destPath).catch(() => {});
-        }).catch(() => {});
-      }
+    const baseImageFilename = path.basename(scene.imageUrl);
+    const audioFilename = path.basename(scene.audioUrl);
 
-      return {
-        imageUrl: imageFilename,
-        audioUrl: audioFilename,
-        text: scene.text,
-        duration: scene.duration,
-      };
+    const srcImagePath = path.join(storageImagesDir, baseImageFilename);
+    const destImagePath = path.join(remotionPublicDir, baseImageFilename);
+    try {
+      await fs.access(srcImagePath);
+      await fs.copyFile(srcImagePath, destImagePath);
+    } catch {}
+
+    const srcAudioPath = path.join(storageAudioDir, audioFilename);
+    const destAudioPath = path.join(remotionPublicDir, audioFilename);
+    try {
+      await fs.access(srcAudioPath);
+      await fs.copyFile(srcAudioPath, destAudioPath);
+    } catch {}
+
+    const actualDuration = scene.duration || 8;
+
+    renderScenes.push({
+      imageUrl: baseImageFilename,
+      audioUrl: audioFilename,
+      text: scene.text || "",
+      duration: actualDuration,
     });
+  }
 
-  if (scenes.length === 0) {
+  if (renderScenes.length === 0) {
     throw new Error(`No scenes with media found for job: ${videoJobId}`);
   }
+
+  // Calculate total duration in frames
+  const totalDurationFrames = renderScenes.reduce((total, scene) => total + Math.round(scene.duration * 30), 0);
+  console.log(`[Render] Total scenes: ${renderScenes.length}, Total duration: ${totalDurationFrames} frames (${(totalDurationFrames / 30).toFixed(2)}s)`);
+  console.log(`[Render] Scene details:`, renderScenes.map((s, i) => `Scene ${i + 1}: ${s.duration}s (${Math.round(s.duration * 30)} frames)`).join(", "));
 
   const remotionDir = path.join(workspaceRoot, "..", "remotion");
   const outputDir = path.join(workspaceRoot, "storage", "videos");
@@ -91,7 +101,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
 
   await fs.mkdir(outputDir, { recursive: true });
 
-  const inputProps = { scenes };
+  const inputProps = { scenes: renderScenes };
   await fs.writeFile(propsPath, JSON.stringify(inputProps), "utf-8");
 
   try {
@@ -102,7 +112,8 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
        `--output=${outputPath}`,
        "--codec=h264"],
       {
-        cwd: remotionDir
+        cwd: remotionDir,
+         stdio: "inherit"
       }
     );
 
@@ -110,7 +121,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
       console.error("Remotion render stderr:", stderr);
     }
 
-    console.log("Remotion render output:", stdout);
+      console.log("Remotion render completed");
   } catch (error: any) {
     await fs.unlink(propsPath).catch(() => {});
     await prisma.videoJob.update({

@@ -1,5 +1,5 @@
 import prisma from "../../lib/prisma";
-import { generateAudio } from "./piper.service";
+import { generateAudio, getAudioDuration } from "./piper.service";
 import { Scene } from "@prisma/client";
 import { renderVideo } from "../../services/render.service";
 import fs from "fs/promises";
@@ -20,9 +20,11 @@ export async function generateSceneAudio(sceneId: string): Promise<Scene> {
     try {
       await fs.access(specificAudioPath);
       const fallbackAudioPath = `storage/audio/${sceneId}.wav`;
+      const measuredDuration = await getAudioDuration(fallbackAudioPath);
+      
       const updatedScene = await prisma.scene.update({
         where: { id: sceneId },
-        data: { audioUrl: fallbackAudioPath, voiceStatus: "DONE" },
+        data: { audioUrl: fallbackAudioPath, voiceStatus: "DONE", duration: Math.round(measuredDuration) },
       });
       return updatedScene;
     } catch (err) {
@@ -37,11 +39,18 @@ export async function generateSceneAudio(sceneId: string): Promise<Scene> {
 
   try {
     const text = scene.text || "";
-    await generateAudio(text, sceneId);
+    const audioUrl = await generateAudio(text, sceneId);
+
+    // Measure actual audio duration
+    const measuredDuration = await getAudioDuration(audioUrl);
 
     const updatedScene = await prisma.scene.update({
       where: { id: sceneId },
-      data: { audioUrl: `storage/audio/${sceneId}.wav`, voiceStatus: "DONE" },
+      data: { 
+        audioUrl, 
+        voiceStatus: "DONE", 
+        duration: Math.round(measuredDuration),
+      },
     });
 
     return updatedScene;

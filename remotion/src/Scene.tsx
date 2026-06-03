@@ -32,7 +32,8 @@ export const Scene: React.FC<SceneProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const totalFrames = duration * fps;
+  // Use 30fps for frame calculations to match render.service.ts
+  const totalFrames = Math.round(duration * 30);
 
   const scale = interpolate(
     frame,
@@ -91,6 +92,7 @@ export const Scene: React.FC<SceneProps> = ({
         <Audio
           src={staticFile(audioUrl)}
           startFrom={0}
+          volume={1}
         />
       )}
     </AbsoluteFill>
@@ -105,7 +107,8 @@ interface SubtitleOverlayProps {
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({ text, duration }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const totalFrames = duration * fps;
+  // Use 30fps for frame calculations to match render.service.ts
+  const totalFrames = Math.round(duration * 30);
 
   const textOpacity = spring({
     frame,
