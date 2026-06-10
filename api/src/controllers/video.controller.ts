@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { createVideoJob, getVideoById, getVideoJobs } from "../services/video.service";
+import { logger } from "../utils/logger";
+import { addScriptJob } from "../queues";
 import { generateScript } from "../services/script.service";
 import {
   CreateVideoJobInput,
@@ -16,16 +18,15 @@ export const handleCreateVideoJob = async (
   try {
     const created = await createVideoJob(req.body);
 
-    setImmediate(async () => {
-      try {
-        await generateScript(created.data.id);
-      } catch (backgroundError) {
-        console.error(
-          `Background script generation failed for job ${created.data.id}:`,
-          backgroundError,
-        );
-      }
-    });
+    logger.info(`Video job created: ${created.data.id}`);
+
+    // Enqueue a script generation job instead of running inline
+    try {
+      await addScriptJob({ projectId: null as any, videoId: created.data.id, prompt: created.data.topic });
+      logger.info(`Enqueued script job for video ${created.data.id}`);
+    } catch (err) {
+      logger.error(`Failed to enqueue script job for video ${created.data.id}:`, err);
+    }
 
     res.status(201).json(created);
   } catch (error) {

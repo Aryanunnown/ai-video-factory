@@ -67,13 +67,14 @@ export const Scene: React.FC<SceneProps> = ({
 
   return (
     <AbsoluteFill>
-      <AbsoluteFill>
+      <AbsoluteFill style={{ backgroundColor: "#000" }}>
         <Img
           src={staticFile(imageUrl)}
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            objectPosition: "center center",
             transform: `scale(${scale}) translate(${kenBurnsX}px, ${kenBurnsY}px)`,
             transformOrigin: "center center",
           }}

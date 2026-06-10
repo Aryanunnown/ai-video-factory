@@ -1,11 +1,11 @@
 export const logger = {
-  info: (message: string, meta?: Record<string, unknown>) => {
+  info: (message: string, meta?: unknown) => {
     console.info(message, meta ?? "");
   },
-  warn: (message: string, meta?: Record<string, unknown>) => {
+  warn: (message: string, meta?: unknown) => {
     console.warn(message, meta ?? "");
   },
-  error: (message: string, meta?: Record<string, unknown>) => {
+  error: (message: string, meta?: unknown) => {
     console.error(message, meta ?? "");
   },
 };

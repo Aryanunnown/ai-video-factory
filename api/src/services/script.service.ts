@@ -1,7 +1,7 @@
 import type { Prisma, Scene, VideoJob } from "@prisma/client";
 import prisma from "../lib/prisma";
+import { logger } from "../utils/logger";
 import { getAIProvider } from "./ai/provider.factory";
-import { generateVideoImages } from "./visual.service";
 
 export interface ScriptGenerationResult {
   job: VideoJob;
@@ -11,6 +11,8 @@ export interface ScriptGenerationResult {
 export const generateScript = async (
   videoJobId: string,
 ): Promise<ScriptGenerationResult> => {
+  logger.info(`generateScript called for job ${videoJobId}`);
+
   const videoJob = await prisma.videoJob.findUnique({
     where: { id: videoJobId },
   });
@@ -53,14 +55,7 @@ export const generateScript = async (
     };
   });
 
-  // Start image generation asynchronously after SCRIPT_DONE
-  setImmediate(async () => {
-    try {
-      await generateVideoImages(videoJobId);
-    } catch (imageError) {
-      console.error(`Image generation failed for job ${videoJobId}:`, imageError);
-    }
-  });
+  logger.info(`Script generation completed for job ${videoJobId}`);
 
   return result;
 };
