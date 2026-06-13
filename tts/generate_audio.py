@@ -4,7 +4,16 @@ import sys
 import os
 
 scriptDir = os.path.dirname(os.path.abspath(__file__))
-voicePath = os.path.join(scriptDir, "voices", "en_US-lessac-medium.onnx")
+
+voice_model = "en_US-lessac-medium.onnx"
+if len(sys.argv) > 3:
+    voice_model = sys.argv[3]
+
+voicePath = os.path.join(scriptDir, "voices", voice_model)
+
+if not os.path.exists(voicePath):
+    print(f"Warning: Voice file not found at {voicePath}. Falling back to default.", file=sys.stderr)
+    voicePath = os.path.join(scriptDir, "voices", "en_US-lessac-medium.onnx")
 
 voice = PiperVoice.load(voicePath)
 

@@ -48,7 +48,7 @@ export const Scene: React.FC<SceneProps> = ({
   const kenBurnsX = interpolate(
     frame,
     [0, totalFrames],
-    [0, -60],
+    [0, -30],
     {
       extrapolateRight: "clamp",
       extrapolateLeft: "clamp",
@@ -58,7 +58,7 @@ export const Scene: React.FC<SceneProps> = ({
   const kenBurnsY = interpolate(
     frame,
     [0, totalFrames],
-    [0, -40],
+    [0, -20],
     {
       extrapolateRight: "clamp",
       extrapolateLeft: "clamp",
@@ -130,14 +130,14 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({ text, duration }) => 
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        padding: "0 60px",
-        paddingBottom: "160px",
+        padding: "0 30px",
+        paddingBottom: "80px",
       }}
     >
       <div
         style={{
           color: "white",
-          fontSize: "52px",
+          fontSize: "26px",
           fontWeight: 700,
           textAlign: "center",
           lineHeight: 1.3,
@@ -206,7 +206,7 @@ const WordFadeIn: React.FC<WordFadeInProps> = ({
       style={{
         display: "inline-block",
         opacity: wordOpacity,
-        transform: `translateY(${20 * (1 - wordTranslateY)}px)`,
+        transform: `translateY(${10 * (1 - wordTranslateY)}px)`,
         marginRight: "5px",
       }}
     >

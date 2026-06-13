@@ -5,7 +5,7 @@ import { logger } from "../utils/logger";
 export const VOICE_QUEUE_NAME = "VOICE_QUEUE";
 
 export interface VoiceJobData {
-  projectId: string;
+  projectId?: string;
   videoId: string;
   sceneId: string;
   text: string;

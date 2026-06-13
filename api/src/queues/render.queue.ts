@@ -5,7 +5,7 @@ import { logger } from "../utils/logger";
 export const RENDER_QUEUE_NAME = "RENDER_QUEUE";
 
 export interface RenderJobData {
-  projectId: string;
+  projectId?: string;
   videoId: string;
   scenes: Array<{
     sceneId: string;

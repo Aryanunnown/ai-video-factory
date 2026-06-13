@@ -22,7 +22,7 @@ export const handleCreateVideoJob = async (
 
     // Enqueue a script generation job instead of running inline
     try {
-      await addScriptJob({ projectId: null as any, videoId: created.data.id, prompt: created.data.topic });
+      await addScriptJob({ videoJobId: created.data.id });
       logger.info(`Enqueued script job for video ${created.data.id}`);
     } catch (err) {
       logger.error(`Failed to enqueue script job for video ${created.data.id}:`, err);

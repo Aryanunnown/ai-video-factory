@@ -5,10 +5,7 @@ import { logger } from "../utils/logger";
 export const SCRIPT_QUEUE_NAME = "SCRIPT_QUEUE";
 
 export interface ScriptJobData {
-  projectId: string;
-  videoId: string;
-  prompt: string;
-  [key: string]: any;
+  videoJobId: string;
 }
 
 export interface ScriptJobResult {
@@ -41,14 +38,13 @@ export function getScriptQueue(): Queue<ScriptJobData, ScriptJobResult> {
  * Add a job to the script queue
  */
 export async function addScriptJob(data: ScriptJobData) {
-  const jobId = `script-${data.videoId}-${Date.now()}`;
+  const jobId = `script-${data.videoJobId}-${Date.now()}`;
   const queue = getScriptQueue();
 
   logger.info("Enqueuing script job", {
     queue: SCRIPT_QUEUE_NAME,
     jobId,
-    videoId: data.videoId,
-    prompt: data.prompt?.substring(0, 150),
+    videoJobId: data.videoJobId,
   });
 
   return queue.add(SCRIPT_QUEUE_NAME, data, {

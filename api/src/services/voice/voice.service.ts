@@ -7,7 +7,7 @@ import path from "path";
 
 const USE_CACHED_ASSETS = process.env.USE_CACHED_ASSETS === "true";
 
-export async function generateSceneAudio(sceneId: string): Promise<Scene> {
+export async function generateSceneAudio(sceneId: string, voice?: string): Promise<Scene> {
   const scene = await prisma.scene.findUnique({ where: { id: sceneId } });
   if (!scene) {
     throw new Error(`Scene not found for id: ${sceneId}`);
@@ -39,7 +39,7 @@ export async function generateSceneAudio(sceneId: string): Promise<Scene> {
 
   try {
     const text = scene.text || "";
-    const audioUrl = await generateAudio(text, sceneId);
+    const audioUrl = await generateAudio(text, sceneId, voice);
 
     // Measure actual audio duration
     const measuredDuration = await getAudioDuration(audioUrl);

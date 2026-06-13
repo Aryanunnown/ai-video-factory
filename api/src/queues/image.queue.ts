@@ -5,7 +5,7 @@ import { logger } from "../utils/logger";
 export const IMAGE_QUEUE_NAME = "IMAGE_QUEUE";
 
 export interface ImageJobData {
-  projectId: string;
+  projectId?: string;
   videoId: string;
   sceneId: string;
   description: string;

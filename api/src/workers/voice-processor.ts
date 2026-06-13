@@ -17,12 +17,17 @@ export function createVoiceWorker() {
       logger.info(`Processing voice job: ${job.id}`);
 
       try {
-        const { projectId, videoId, sceneId, text, voice = "default" } = job.data;
+        const { videoId, sceneId, voice } = job.data;
 
-        logger.info(`Generating audio for scene ${sceneId} with voice ${voice}`);
+        const scene = await prisma.scene.findUnique({ where: { id: sceneId } });
+        if (!scene) {
+          throw new Error(`Scene not found for id: ${sceneId}`);
+        }
+
+        logger.info(`Generating audio for scene ${sceneId} of video ${videoId} with voice ${voice ?? "default"}`);
 
         // Use voice service to generate audio and persist scene updates
-        const updatedScene = await generateSceneAudio(sceneId);
+        const updatedScene = await generateSceneAudio(sceneId, voice);
 
         logger.info(`Audio generated for scene ${sceneId}: ${updatedScene.audioUrl} (duration: ${updatedScene.duration}s)`);
 
@@ -40,8 +45,14 @@ export function createVoiceWorker() {
             text: s.text ?? "",
           }));
 
+          await prisma.videoJob.update({
+            where: { id: videoId },
+            data: { status: "VOICE_DONE" },
+          });
+          logger.info(`Video job ${videoId} updated to VOICE_DONE`);
+
           try {
-            await addRenderJob({ projectId: projectId as any, videoId, scenes: renderScenes });
+            await addRenderJob({ videoId, scenes: renderScenes });
             logger.info(`Enqueued render job for video ${videoId}`);
           } catch (enqueueErr) {
             logger.error(`Failed to enqueue render job for video ${videoId}:`, enqueueErr);

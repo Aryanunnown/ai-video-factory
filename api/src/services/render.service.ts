@@ -89,6 +89,19 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
     throw new Error(`No scenes with media found for job: ${videoJobId}`);
   }
 
+  // Copy background music if present
+  let backgroundMusicUrl: string | undefined = undefined;
+  const srcMusicPath = path.join(workspaceRoot, "storage", "music", "background.mp3");
+  const destMusicPath = path.join(remotionPublicDir, "background.mp3");
+  try {
+    await fs.access(srcMusicPath);
+    await fs.copyFile(srcMusicPath, destMusicPath);
+    backgroundMusicUrl = "background.mp3";
+    console.log("[Render] Found background music, copied to Remotion public directory");
+  } catch (err) {
+    console.log("[Render] No background music found in storage/music/background.mp3, rendering without it");
+  }
+
   // Calculate total duration in frames
   const totalDurationFrames = renderScenes.reduce((total, scene) => total + Math.round(scene.duration * 30), 0);
   console.log(`[Render] Total scenes: ${renderScenes.length}, Total duration: ${totalDurationFrames} frames (${(totalDurationFrames / 30).toFixed(2)}s)`);
@@ -101,7 +114,7 @@ export const renderVideo = async (videoJobId: string): Promise<string> => {
 
   await fs.mkdir(outputDir, { recursive: true });
 
-  const inputProps = { scenes: renderScenes };
+  const inputProps = { scenes: renderScenes, backgroundMusicUrl };
   await fs.writeFile(propsPath, JSON.stringify(inputProps), "utf-8");
 
   try {

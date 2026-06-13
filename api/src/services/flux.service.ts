@@ -27,8 +27,8 @@ export async function generateImage(prompt: string, sceneId: string): Promise<st
         model: "black-forest-labs/FLUX.1-schnell",
         inputs: prompt,
         parameters: {
-          width: 1080,
-          height: 1920,
+          width: 640,
+          height: 480,
         },
       }, { outputType: "blob" });
 

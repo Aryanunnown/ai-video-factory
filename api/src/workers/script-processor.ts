@@ -16,20 +16,20 @@ export function createScriptWorker() {
       logger.info(`Processing script job: ${job.id}`);
 
       try {
-        const { projectId, videoId } = job.data;
+        const { videoJobId } = job.data;
 
-        logger.info(`Generating script for video ${videoId}`);
+        logger.info(`Generating script for video ${videoJobId}`);
 
         // Use the existing service to generate script and persist scenes
-        const result = await generateScript(videoId);
+        const result = await generateScript(videoJobId);
 
-        logger.info(`Script generation finished for video ${videoId}. Enqueuing image jobs for ${result.scenes.length} scenes.`);
+        logger.info(`Script generation finished for video ${videoJobId}. Enqueuing image jobs for ${result.scenes.length} scenes.`);
 
         // Enqueue image jobs for each created scene
         for (const scene of result.scenes) {
           try {
-            await addImageJob({ projectId: projectId as any, videoId, sceneId: scene.id, description: scene.visual || "" });
-            logger.info(`Enqueued image job for scene ${scene.id} (video ${videoId})`);
+            await addImageJob({ videoId: videoJobId, sceneId: scene.id, description: scene.visual || "" });
+            logger.info(`Enqueued image job for scene ${scene.id} (video ${videoJobId})`);
           } catch (enqueueErr) {
             logger.error(`Failed to enqueue image job for scene ${scene.id}:`, enqueueErr);
           }

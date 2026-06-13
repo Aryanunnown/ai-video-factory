@@ -17,25 +17,42 @@ export function createImageWorker() {
       logger.info(`Processing image job: ${job.id}`);
 
       try {
-        const { projectId, videoId, sceneId, description } = job.data;
+        const { videoId, sceneId, description } = job.data;
 
-        logger.info(`Generating image for scene ${sceneId}: ${String(description).substring(0, 100)}...`);
+        const scene = await prisma.scene.findUnique({ where: { id: sceneId } });
+        if (!scene) {
+          throw new Error(`Scene not found for id: ${sceneId}`);
+        }
+
+        logger.info(`Generating image for scene ${sceneId} of video ${videoId}: ${String(description).substring(0, 100)}...`);
 
         // Use visual service to generate and persist the image
         const imagePath = await generateSceneImage(sceneId);
 
         logger.info(`Image generated successfully for scene ${sceneId}: ${imagePath}`);
 
-        // Fetch scene to obtain text for voice generation
-        const scene = await prisma.scene.findUnique({ where: { id: sceneId } });
-        const text = scene?.text ?? "";
-
         // Enqueue voice job for this scene
+        const text = scene.text ?? "";
         try {
-          await addVoiceJob({ projectId: projectId as any, videoId, sceneId, text });
+          await addVoiceJob({ videoId, sceneId, text });
           logger.info(`Enqueued voice job for scene ${sceneId} (video ${videoId})`);
         } catch (enqueueErr) {
           logger.error(`Failed to enqueue voice job for scene ${sceneId}:`, enqueueErr);
+        }
+
+        const pendingImages = await prisma.scene.count({
+          where: {
+            jobId: videoId,
+            imageStatus: { not: "DONE" },
+          },
+        });
+
+        if (pendingImages === 0) {
+          await prisma.videoJob.update({
+            where: { id: videoId },
+            data: { status: "IMAGE_DONE" },
+          });
+          logger.info(`Video job ${videoId} updated to IMAGE_DONE`);
         }
 
         return {

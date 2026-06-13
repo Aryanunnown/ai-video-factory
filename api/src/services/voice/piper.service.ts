@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 
-export async function generateAudio(text: string, sceneId: string): Promise<string> {
+export async function generateAudio(text: string, sceneId: string, voice?: string): Promise<string> {
   const audioDir = path.join(process.cwd(), "storage", "audio");
   const fullOutputPath = path.join(audioDir, `${sceneId}.wav`);
 
@@ -16,7 +16,11 @@ export async function generateAudio(text: string, sceneId: string): Promise<stri
 
   return new Promise((resolve, reject) => {
     const venvPython = path.resolve(process.cwd(), "..", "tts", "venv", "bin", "python");
-    const child = spawn(venvPython, [scriptPath, text, fullOutputPath]);
+    const args = [scriptPath, text, fullOutputPath];
+    if (voice) {
+      args.push(voice);
+    }
+    const child = spawn(venvPython, args);
 
     let stdout = "";
     let stderr = "";
