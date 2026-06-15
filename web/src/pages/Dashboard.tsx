@@ -4,80 +4,135 @@ import {
   Box,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
+  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { getVideoJobsApi } from "../api/videoApi";
-import { VideoSummary } from "../types/video";
-import StatusChip from "../components/StatusChip";
+import type { ProgressStatus } from "../types/video";
+import { deriveProgress } from "../types/video";
+import JobProgressStepper from "../components/JobProgressStepper";
+
+const statusMap: Record<string, "default" | "success" | "info" | "warning" | "error"> = {
+  PENDING: "default",
+  PROCESSING: "info",
+  DONE: "success",
+  FAILED: "error",
+};
+
+const progressLabel: Record<ProgressStatus, string> = {
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
+  DONE: "DONE",
+  FAILED: "FAILED",
+};
+
+interface CategoryCounts {
+  PENDING: number;
+  PROCESSING: number;
+  DONE: number;
+  FAILED: number;
+}
+
+function emptyCounts(): CategoryCounts {
+  return { PENDING: 0, PROCESSING: 0, DONE: 0, FAILED: 0 };
+}
 
 const Dashboard = () => {
   const { data: jobs, isLoading, isError, error } = useQuery({
     queryKey: ["videoJobs"],
     queryFn: getVideoJobsApi,
-    // refetchInterval: 5000,
+    refetchInterval: 5000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
-  const totals = useMemo(
-    () => ({
-      total: jobs?.length ?? 0,
-      pending: jobs?.filter((job) => job.status === "PENDING").length ?? 0,
-      scriptDone: jobs?.filter((job) => job.status === "SCRIPT_DONE").length ?? 0,
-      failed: jobs?.filter((job) => job.status === "FAILED").length ?? 0,
-    }),
-    [jobs]
+  const categories = useMemo(() => {
+    const script = emptyCounts();
+    const image = emptyCounts();
+    const voice = emptyCounts();
+    const render = emptyCounts();
+
+    jobs?.forEach((job) => {
+      const p = deriveProgress(job.status);
+      script[p.script]++;
+      image[p.image]++;
+      voice[p.voice]++;
+      render[p.render]++;
+    });
+
+    return { script, image, voice, render };
+  }, [jobs]);
+
+  const progressChips = (counts: CategoryCounts) => (
+    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 1 }}>
+      {(Object.entries(counts) as [ProgressStatus, number][]).map(([status, count]) => (
+        <Chip
+          key={status}
+          label={`${progressLabel[status]}: ${count}`}
+          size="small"
+          variant="outlined"
+          color={statusMap[status]}
+        />
+      ))}
+    </Box>
   );
 
   return (
     <Box sx={{ width: "100%", maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
+      <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+        Dashboard
+      </Typography>
+
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           gap: 3,
-          mb: 3,
+          mb: 4,
         }}
       >
-        <Card sx={{ minHeight: 140 }}>
+        <Card>
           <CardContent>
             <Typography color="text.secondary" gutterBottom>
-              Total Videos
+              Script Progress
             </Typography>
-            <Typography variant="h3">{totals.total}</Typography>
+            {progressChips(categories.script)}
           </CardContent>
         </Card>
 
-        <Card sx={{ minHeight: 140 }}>
+        <Card>
           <CardContent>
             <Typography color="text.secondary" gutterBottom>
-              Pending
+              Image Progress
             </Typography>
-            <Typography variant="h3">{totals.pending}</Typography>
+            {progressChips(categories.image)}
           </CardContent>
         </Card>
 
-        <Card sx={{ minHeight: 140 }}>
+        <Card>
           <CardContent>
             <Typography color="text.secondary" gutterBottom>
-              Script Done
+              Voice Progress
             </Typography>
-            <Typography variant="h3">{totals.scriptDone}</Typography>
+            {progressChips(categories.voice)}
           </CardContent>
         </Card>
 
-        <Card sx={{ minHeight: 140 }}>
+        <Card>
           <CardContent>
             <Typography color="text.secondary" gutterBottom>
-              Failed
+              Render Progress
             </Typography>
-            <Typography variant="h3">{totals.failed}</Typography>
+            {progressChips(categories.render)}
           </CardContent>
         </Card>
       </Box>
@@ -102,25 +157,34 @@ const Dashboard = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Topic</TableCell>
-                    <TableCell>Status</TableCell>
+                    <TableCell>Progress</TableCell>
                     <TableCell>Created At</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {jobs?.map((job) => (
-                    <TableRow
-                      key={job.id}
-                      component={Link}
-                      to={`/video/${job.id}`}
-                      sx={{ textDecoration: "none", cursor: "pointer", "&:hover": { backgroundColor: "#f5f5f5" } }}
-                    >
-                      <TableCell>{job.topic}</TableCell>
-                      <TableCell>
-                        <StatusChip status={job.status} />
-                      </TableCell>
-                      <TableCell>{new Date(job.createdAt).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
+                  {jobs?.map((job) => {
+                    const progress = deriveProgress(job.status);
+                    return (
+                      <TableRow
+                        key={job.id}
+                        component={Link}
+                        to={`/video/${job.id}`}
+                        sx={{
+                          textDecoration: "none",
+                          cursor: "pointer",
+                          "&:hover": { backgroundColor: "#f5f5f5" },
+                        }}
+                      >
+                        <TableCell>{job.topic}</TableCell>
+                        <TableCell sx={{ minWidth: 360 }}>
+                          <JobProgressStepper progress={progress} />
+                        </TableCell>
+                        <TableCell>
+                          {new Date(job.createdAt).toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TableContainer>

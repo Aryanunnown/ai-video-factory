@@ -67,13 +67,14 @@ const voiceStatusToColor = (status: string) => {
 
 const getPipelineStatuses = (status: string) => {
   switch (status) {
-    case "PROCESSING":
-    case "VISUAL_PROCESSING":
-      return ["DONE", "DONE", "PROCESSING", "PENDING"];
-    case "VISUAL_DONE":
-      return ["DONE", "DONE", "PROCESSING", "PENDING"];
+    case "PENDING":
+      return ["PROCESSING", "PENDING", "PENDING", "PENDING"];
+    case "SCRIPT_DONE":
+      return ["DONE", "PENDING", "PROCESSING", "PENDING"];
+    case "IMAGE_DONE":
+      return ["DONE", "PROCESSING", "DONE", "PENDING"];
     case "VOICE_PROCESSING":
-      return ["DONE", "DONE", "PROCESSING", "PENDING"];
+      return ["DONE", "PROCESSING", "DONE", "PENDING"];
     case "VOICE_DONE":
       return ["DONE", "DONE", "DONE", "PROCESSING"];
     case "RENDER_PROCESSING":

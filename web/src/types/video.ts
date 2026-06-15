@@ -50,3 +50,35 @@ export interface VideoResponseAPI {
 }
 
 export type CreateVideoPayload = CreateVideoRequest;
+
+export type ProgressStatus = "PENDING" | "PROCESSING" | "DONE" | "FAILED";
+
+export interface JobProgress {
+  script: ProgressStatus;
+  image: ProgressStatus;
+  voice: ProgressStatus;
+  render: ProgressStatus;
+}
+
+export function deriveProgress(status: string): JobProgress {
+  switch (status) {
+    case "PENDING":
+      return { script: "PROCESSING", image: "PENDING", voice: "PENDING", render: "PENDING" };
+    case "SCRIPT_DONE":
+      return { script: "DONE", image: "PROCESSING", voice: "PENDING", render: "PENDING" };
+    case "IMAGE_DONE":
+      return { script: "DONE", image: "DONE", voice: "PROCESSING", render: "PENDING" };
+    case "VOICE_PROCESSING":
+      return { script: "DONE", image: "DONE", voice: "PROCESSING", render: "PENDING" };
+    case "VOICE_DONE":
+      return { script: "DONE", image: "DONE", voice: "DONE", render: "PROCESSING" };
+    case "RENDER_PROCESSING":
+      return { script: "DONE", image: "DONE", voice: "DONE", render: "PROCESSING" };
+    case "RENDER_DONE":
+      return { script: "DONE", image: "DONE", voice: "DONE", render: "DONE" };
+    case "FAILED":
+      return { script: "FAILED", image: "FAILED", voice: "FAILED", render: "FAILED" };
+    default:
+      return { script: "PENDING", image: "PENDING", voice: "PENDING", render: "PENDING" };
+  }
+}
