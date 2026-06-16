@@ -70,6 +70,7 @@ export const getVideoJobs = async (): Promise<VideoJobSummaryData[]> => {
       id: true,
       topic: true,
       status: true,
+      errorMessage: true,
       createdAt: true,
     },
   });

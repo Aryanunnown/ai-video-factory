@@ -4,6 +4,7 @@ import { logger } from "../utils/logger";
 import { SCRIPT_QUEUE_NAME, type ScriptJobData, type ScriptJobResult } from "../queues/script.queue";
 import { generateScript } from "../services/script.service";
 import { addImageJob } from "../queues";
+import prisma from "../lib/prisma";
 
 /**
  * Script Queue Worker
@@ -50,8 +51,14 @@ export function createScriptWorker() {
     logger.info(`Script job completed: ${job.id}`);
   });
 
-  worker.on("failed", (job, error) => {
+  worker.on("failed", async (job, error) => {
     logger.error(`Script job failed: ${job?.id}`, error);
+    if (job?.data.videoJobId) {
+      await prisma.videoJob.update({
+        where: { id: job.data.videoJobId },
+        data: { status: "FAILED", errorMessage: error?.message || "Script generation failed" },
+      });
+    }
   });
 
   return worker;

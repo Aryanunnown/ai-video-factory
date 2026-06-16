@@ -21,6 +21,7 @@ export interface VideoJobSummaryData {
   id: string;
   topic: string;
   status: string;
+  errorMessage: string | null;
   createdAt: string;
 }
 
@@ -30,7 +31,7 @@ export interface ListVideoJobsResponse {
 }
 
 export interface VideoJobDetailData
-  extends Pick<VideoJob, "id" | "topic" | "title" | "status" | "scriptJson" | "finalVideo"> {
+  extends Pick<VideoJob, "id" | "topic" | "title" | "status" | "scriptJson" | "finalVideo" | "errorMessage"> {
   createdAt: string;
   scenes: Scene[];
 }

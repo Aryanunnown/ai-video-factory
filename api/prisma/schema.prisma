@@ -15,8 +15,9 @@ model VideoJob {
   audioUrl   String?
   finalVideo String?
   createdAt  DateTime @default(now())
-  notes      String?
-  scenes     Scene[]
+  notes        String?
+  errorMessage String?
+  scenes       Scene[]
 }
 
 model Scene {

@@ -3,6 +3,7 @@ import { getRedisClient } from "../lib/redis";
 import { logger } from "../utils/logger";
 import { RENDER_QUEUE_NAME, type RenderJobData, type RenderJobResult } from "../queues/render.queue";
 import { renderVideo } from "../services/render.service";
+import prisma from "../lib/prisma";
 
 /**
  * Render Queue Worker
@@ -42,8 +43,14 @@ export function createRenderWorker() {
     logger.info(`Render job completed: ${job.id}`);
   });
 
-  worker.on("failed", (job, error) => {
+  worker.on("failed", async (job, error) => {
     logger.error(`Render job failed: ${job?.id}`, error);
+    if (job?.data.videoId) {
+      await prisma.videoJob.update({
+        where: { id: job.data.videoId },
+        data: { status: "FAILED", errorMessage: error?.message || "Render failed" },
+      });
+    }
   });
 
   return worker;

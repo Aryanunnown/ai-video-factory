@@ -175,7 +175,14 @@ const Dashboard = () => {
                           "&:hover": { backgroundColor: "#f5f5f5" },
                         }}
                       >
-                        <TableCell>{job.topic}</TableCell>
+                        <TableCell>
+                          {job.topic}
+                          {job.status === "FAILED" && job.errorMessage && (
+                            <Typography variant="caption" color="error" sx={{ display: "block", mt: 0.5 }}>
+                              {job.errorMessage}
+                            </Typography>
+                          )}
+                        </TableCell>
                         <TableCell sx={{ minWidth: 360 }}>
                           <JobProgressStepper progress={progress} />
                         </TableCell>

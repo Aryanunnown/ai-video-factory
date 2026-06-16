@@ -6,7 +6,8 @@
 */
 
 -- AlterTable: convert voiceStatus from VoiceStatus enum to String
+ALTER TABLE "Scene" ALTER COLUMN "voiceStatus" DROP DEFAULT;
 ALTER TABLE "Scene" ALTER COLUMN "voiceStatus" TYPE TEXT USING "voiceStatus"::text;
 
 -- Drop the VoiceStatus enum type since we're using String
-DROP TYPE "VoiceStatus";
+DROP TYPE IF EXISTS "VoiceStatus";

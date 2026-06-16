@@ -135,6 +135,11 @@ const VideoDetail = () => {
                   Created: {new Date(video.createdAt).toLocaleString()}
                 </Typography>
               </Box>
+              {video.status === "FAILED" && video.errorMessage && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {video.errorMessage}
+                </Alert>
+              )}
             </Stack>
           ) : (
             <Typography>No video details available.</Typography>

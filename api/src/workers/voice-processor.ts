@@ -78,8 +78,14 @@ export function createVoiceWorker() {
     logger.info(`Voice job completed: ${job.id}`);
   });
 
-  worker.on("failed", (job, error) => {
+  worker.on("failed", async (job, error) => {
     logger.error(`Voice job failed: ${job?.id}`, error);
+    if (job?.data.videoId) {
+      await prisma.videoJob.update({
+        where: { id: job.data.videoId },
+        data: { status: "FAILED", errorMessage: error?.message || "Voice generation failed" },
+      });
+    }
   });
 
   return worker;

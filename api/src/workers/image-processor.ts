@@ -73,8 +73,14 @@ export function createImageWorker() {
     logger.info(`Image job completed: ${job.id}`);
   });
 
-  worker.on("failed", (job, error) => {
+  worker.on("failed", async (job, error) => {
     logger.error(`Image job failed: ${job?.id}`, error);
+    if (job?.data.videoId) {
+      await prisma.videoJob.update({
+        where: { id: job.data.videoId },
+        data: { status: "FAILED", errorMessage: error?.message || "Image generation failed" },
+      });
+    }
   });
 
   return worker;

@@ -23,6 +23,7 @@ export interface VideoSummary {
   id: string;
   topic: string;
   status: string;
+  errorMessage?: string | null;
   createdAt: string;
 }
 
@@ -37,6 +38,7 @@ export interface VideoResponse {
   notes?: string | null;
   title?: string | null;
   status: string;
+  errorMessage?: string | null;
   scriptJson?: unknown | null;
   audioUrl?: string | null;
   finalVideo?: string | null;

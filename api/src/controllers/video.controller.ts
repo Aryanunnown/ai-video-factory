@@ -48,6 +48,7 @@ export const handleGetVideoJob = async (
         topic: job.topic,
         title: job.title,
         status: job.status,
+        errorMessage: job.errorMessage,
         scriptJson: job.scriptJson,
         finalVideo: job.finalVideo,
         createdAt: job.createdAt.toISOString(),
